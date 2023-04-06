@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -24,6 +26,25 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
 
     private String name = "";
     private String group = "";
+
+    private MessageBroadcastReceiver messageBroadcastReceiver = new MessageBroadcastReceiver();
+    private IntentFilter intentFilter = new IntentFilter();
+
+    private class MessageBroadcastReceiver extends android.content.BroadcastReceiver {
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+            Log.d(Constants.BROADCAST_RECEIVER_EXTRA, intent.getStringExtra(Constants.BROADCAST_RECEIVER_EXTRA));
+        }
+    }
+
+    private void startPracticalTestService() {
+        if (name != null && group != null) {
+            Intent intent = new Intent(getApplicationContext(), PracticalTest01Var04Service.class);
+            intent.putExtra("name", name);
+            intent.putExtra("group", group);
+            getApplicationContext().startService(intent);
+        }
+    }
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -60,6 +81,7 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
             }
 
             resultText.setText(name + " " + group);
+            startPracticalTestService();
         });
 
         buttonNavigateToSecondaryActivity.setOnClickListener(view -> {
@@ -69,6 +91,9 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
             startActivityForResult(intent, 1);
         });
 
+        for (String action : Constants.actionTypes) {
+            intentFilter.addAction(action);
+        }
     }
 
     @Override
@@ -105,5 +130,22 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(messageBroadcastReceiver, intentFilter);
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(messageBroadcastReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent(getApplicationContext(), PracticalTest01Var04Service.class);
+        getApplicationContext().stopService(intent);
+    }
 }
