@@ -1,5 +1,7 @@
 package ro.pub.cs.systems.eim.practicaltest01var04;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -11,6 +13,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class PracticalTest01Var04MainActivity extends AppCompatActivity {
 
@@ -40,12 +43,18 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
         buttonDisplayInfo.setOnClickListener(view -> {
             if (checkBoxName.isChecked()) {
                 name = nameText.getText().toString();
+                if (name.isEmpty()) {
+                    Toast.makeText(this, "Name value is incorrect!", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 name = "";
             }
 
             if (checkBoxGroup.isChecked()) {
                 group = groupText.getText().toString();
+                if (group.isEmpty()) {
+                    Toast.makeText(this, "Group value is incorrect!", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 group = "";
             }
@@ -53,14 +62,48 @@ public class PracticalTest01Var04MainActivity extends AppCompatActivity {
             resultText.setText(name + " " + group);
         });
 
+        buttonNavigateToSecondaryActivity.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), PracticalTest01Var04SecondaryActivity.class);
+            intent.putExtra("name", name);
+            intent.putExtra("group", group);
+            startActivityForResult(intent, 1);
+        });
+
     }
 
-/*    public void navigateToSecondaryActivity(View view) {
-        Intent intent = new Intent(getApplicationContext(), PracticalTest01Var04SecondaryActivity.class);
-        intent.putExtra("name", name);
-        intent.putExtra("group", group);
-        startActivityForResult(intent, 1);
-    }*/
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString("name", name);
+        outState.putString("group", group);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        if (savedInstanceState.containsKey("name")) {
+            name = savedInstanceState.getString("name");
+        }
+
+        if (savedInstanceState.containsKey("group")) {
+            group = savedInstanceState.getString("group");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this, "OK result", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "NOT OK result", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
 
 }
